@@ -26,6 +26,8 @@ class _CaptureButtonState extends State<CaptureButton> {
           actualState = 0;
         }
         widget.onPressed(actualState);
+        setState(() {});
+        // capture();
       },
       child: Container(
         height: 80,

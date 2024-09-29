@@ -21,6 +21,7 @@ with WidgetsBindingObserver {
   bool _isProcessing = false;
   // late ImageClassificationHelper imageClassificationHelper;
   Map<String, double>? classification;
+  
 
   initCamera() {
     cameraController = CameraController(widget.camera, ResolutionPreset.medium,
@@ -29,6 +30,7 @@ with WidgetsBindingObserver {
             : ImageFormatGroup.yuv420);
     cameraController.initialize().then((value) {
       cameraController.startImageStream(imageAnalysis);
+      // cameraController.startImageStream((image) => _cameraImage = image);
       
       if (mounted) {
         setState(() {});
@@ -117,6 +119,25 @@ with WidgetsBindingObserver {
             ? Container()
             : cameraWidget(context),
       ),
+    );
+    list.add(
+      Align(
+        alignment: Alignment.bottomCenter,
+        child: Container(
+          color: const Color.fromARGB(255, 20, 44, 92),
+          height: 200,
+          width: MediaQuery.of(context).size.width,
+
+          child: Padding(padding: EdgeInsets.fromLTRB(20, 70, 0, 20), 
+            child: const Text("Predicciones:",
+              style: TextStyle(
+                  fontFamily: "quicksand",
+                  color: Color.fromARGB(255, 90, 143, 211),
+                  decoration: TextDecoration.none,
+                  fontSize: 40
+                ),),),
+        ),
+      )
     );
 
     return SafeArea(

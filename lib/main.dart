@@ -63,7 +63,7 @@ class ExampleState  extends State<Example>{
       debugShowCheckedModeBanner: false,
       // home: const CameraScreen(),
       routerConfig: _router,
-      title: "detección de peligros",
+      title: "GunGuard AI",
       // initialBinding: GlobalBindings(),
     );
   }
@@ -98,7 +98,7 @@ final _router = GoRouter(
               },),
             GoRoute(
               path: "gallery",
-              builder: (context, state) => Gallery(),
+              builder: (context, state) => Gallery(camera: cameraDescription),
               
               ),
            GoRoute(
