@@ -20,7 +20,7 @@ class loadScree extends State<loadScreen> {
     super.initState();
 
     // Esperar n segundos y luego navegar a la ruta de destino
-    Future.delayed(Duration(seconds: 3), () {
+    Future.delayed(Duration(seconds: 1), () {
       context.go(widget.destinationRoute); // Navegar a la ruta pasada como parámetro
     });
   }
