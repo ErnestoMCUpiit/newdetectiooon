@@ -78,7 +78,7 @@ class _SelectionState extends State<Selection> {
             left: MediaQuery.of(context).size.width / 5, // Centrado horizontalmente
             child: ElevatedButton.icon(
               onPressed: () {
-                context.go("/load", extra: "/api",
+                context.go("/api",
                 );
               },
               style: ElevatedButton.styleFrom(
