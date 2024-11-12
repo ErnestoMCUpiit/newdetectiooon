@@ -26,11 +26,15 @@ class _SelectionState extends State<Selection> {
 
   @override
   Widget build(BuildContext context) {
+    final Size screenSize = MediaQuery.of(context).size;
     return Scaffold(
       body: Stack(
+        
         children: [
           // Fondo de pantalla
           Container(
+            width: screenSize.width , // 80% del ancho de la pantalla
+            height: screenSize.height,
             decoration: const BoxDecoration(
               image: DecorationImage(
                 image: AssetImage('assets/bg.png'),
