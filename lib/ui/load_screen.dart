@@ -59,4 +59,39 @@ class loadScree extends State<loadScreen> {
         )),
     );
   }
+
+  
 }
+Container sinCarga(){
+    return Container(
+      color: const Color.fromARGB(255, 20, 44, 92),
+      child:  Padding(padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Padding(
+              padding: EdgeInsets.fromLTRB(20, 0, 20, 150),
+              child: Text("¿Sabías que?",
+                style: TextStyle(
+                  fontFamily: "quicksand",
+                  color: Color.fromARGB(255, 90, 143, 211),
+                  decoration: TextDecoration.none
+                ),),
+            ),
+            LoadingAnimationWidget.fourRotatingDots(color:Color(0xFFF8F8FF),size: 50),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 150, 20, 0),
+              child: Text(randomData(),
+              textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontFamily: "quicksand",
+                  fontWeight: FontWeight.w600,
+                  color: Color.fromARGB(255, 197, 218, 247),
+                  decoration: TextDecoration.none,
+                  fontSize: 20
+                ),),
+            ),
+          ],
+        )),
+    );
+  }

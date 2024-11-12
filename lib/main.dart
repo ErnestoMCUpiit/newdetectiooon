@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:go_router/go_router.dart';
+import 'package:newdetectiooon/ui/api.dart';
 import 'package:newdetectiooon/ui/gallery.dart';
 import 'package:newdetectiooon/ui/index.dart';
 import 'package:newdetectiooon/ui/live_camera.dart';
@@ -104,6 +105,10 @@ final _router = GoRouter(
            GoRoute(
             path: "live",
             builder: (context, state) => LiveCamera(camera: cameraDescription),
+            ),
+           GoRoute(
+            path: "api",
+            builder: (context, state) => Api(),
             )
             
       ]
