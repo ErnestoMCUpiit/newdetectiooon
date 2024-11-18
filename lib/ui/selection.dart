@@ -42,7 +42,7 @@ class _SelectionState extends State<Selection> {
           AnimatedPositioned(
             duration: duration,
             curve: curve,
-            top: selected ? 300 : -100, // Inicia fuera de la pantalla, luego baja
+            top: selected ? 250 : -100, // Inicia fuera de la pantalla, luego baja
             left: MediaQuery.of(context).size.width / 5, // Centrado horizontalmente
             child: ElevatedButton.icon(
               onPressed: () {
@@ -74,7 +74,39 @@ class _SelectionState extends State<Selection> {
           AnimatedPositioned(
             duration: duration,
             curve: curve,
-            top: selected ? 500 : -100, // Inicia fuera de la pantalla, luego baja
+            top: selected ? 550 : -100, // Inicia fuera de la pantalla, luego baja
+            left: MediaQuery.of(context).size.width / 5, // Centrado horizontalmente
+            child: ElevatedButton.icon(
+              onPressed: () {
+                context.go("/api",
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color.fromARGB(255, 183, 208, 238),
+                fixedSize: const Size.fromWidth(250),
+                padding: const EdgeInsets.all(15),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              icon: const Icon(
+                Icons.local_library,
+                size: 40,
+                color: Color.fromARGB(255, 20, 44, 92),
+              ),
+              label: const Text(
+                "Almanaque",
+                style: TextStyle(
+                  fontSize: 27,
+                  color: Color.fromARGB(255, 35, 47, 58),
+                ),
+              ),
+            ),
+          ),
+          AnimatedPositioned(
+            duration: duration,
+            curve: curve,
+            top: selected ? 400 : -100, // Inicia fuera de la pantalla, luego baja
             left: MediaQuery.of(context).size.width / 5, // Centrado horizontalmente
             child: ElevatedButton.icon(
               onPressed: () {
