@@ -76,7 +76,7 @@ class ExampleState  extends State<Example>{
       
     }
     setState(() {});
-  }
+  } 
   
 }
 final _router = GoRouter(

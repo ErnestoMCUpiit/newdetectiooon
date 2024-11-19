@@ -110,8 +110,7 @@ class _SelectionState extends State<Selection> {
             left: MediaQuery.of(context).size.width / 5, // Centrado horizontalmente
             child: ElevatedButton.icon(
               onPressed: () {
-                context.go("/api",
-                );
+                context.go("/load", extra: "/live");
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color.fromARGB(255, 183, 208, 238),

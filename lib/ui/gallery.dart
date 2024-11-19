@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui';
@@ -6,7 +7,9 @@ import 'package:camera/camera.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
+import 'package:newdetectiooon/helper/image_classification_helper.dart';
 import 'package:newdetectiooon/ui/capture_button.dart';
 
 class Gallery extends StatefulWidget {
@@ -21,13 +24,18 @@ class Gallery extends StatefulWidget {
 
 class _GalleryState extends State<Gallery>
 with WidgetsBindingObserver {
+  ImageClassificationHelper? imageClassificationHelper;
   late List<CameraDescription> _cameras;
+  List<double>? classification;
+  img.Image? image;
+  img.Image? imageToPredict;
+  String? imagePath;
   
   late CameraController cameraController;
-  
+    late Future<void> _initializeControllerFuture;
   bool _isProcessing = false;
 
-  late CameraImage _cameraImage;
+  CameraImage? _cameraImage;
   Uint8List? capturedImage;
   
 
@@ -36,42 +44,70 @@ with WidgetsBindingObserver {
   ];
   int changeState = 0;
 
-   initCamera() {
-    cameraController = CameraController(widget.camera, ResolutionPreset.medium,
+  void initCamera() async {
+    cameraController = CameraController(
+      widget.camera, ResolutionPreset.medium,
         imageFormatGroup: Platform.isIOS
             ? ImageFormatGroup.bgra8888
             : ImageFormatGroup.yuv420);
-    cameraController.initialize().then((value) {
+    _initializeControllerFuture = cameraController.initialize();
+    await cameraController.initialize().then((value) {
+      log("camara lista");
+      if (!mounted) {
+        return;
+      }
       // cameraController.startImageStream(imageAnalysis);
-      cameraController.startImageStream((image) => _cameraImage = image);
+      // cameraController.startImageStream((image) => _cameraImage = image);
+      cameraController.startImageStream((CameraImage image) async {
+        cameraController.stopImageStream();
+        setState(() {
+          log("cameraImage actualizado");
+          _cameraImage = image;
+        });
+        // imageAnalysis(cameraImage);
+        await imageAnalysis(_cameraImage!);
+
+        _isProcessing = false;
+      });
       
-      if (mounted) {
+      
+    });
+    if (mounted) {
         setState(() {});
       }
-    });
   }
-  Future<void> imageAnalysis(CameraImage cameraImage) async {
+  Future<void> imageAnalysis(CameraImage? cameraImage) async {
+    // log("BOTON PRESIONADO");
+    log('Análisis');
     // if image is still analyze, skip this frame
-    if (_isProcessing) {
-      return;
-    }
+    // if (_isProcessing) {
+    //   return;
+    // }
     _isProcessing = true;
-    // classification =
-    //     await imageClassificationHelper.inferenceCameraFrame(cameraImage);
-    print('Cámara inicializada y tomando imágenes correctamente.');
+    classification =
+        await imageClassificationHelper?.inferenceCameraFrame(cameraImage!);
+    log("Clasificación: $classification");
     _isProcessing = false;
     if (mounted) {
       setState(() {});
     }
   }
+  // Clean old results when press some take picture button
+  void cleanResult() {
+    
+    image = null;
+    classification = null;
+    setState(() {});
+  }
+
 
   @override
   void initState() {
     WidgetsBinding.instance.addObserver(this);
     initCamera();
-    print('Cámara inicializada y tomando imágenes correctamente.');
-    // imageClassificationHelper = ImageClassificationHelper();
-    // imageClassificationHelper.initHelper();
+    log('Cámara inicializando');
+    imageClassificationHelper = ImageClassificationHelper();
+    imageClassificationHelper!.initHelper();
     super.initState();
   }
 
@@ -94,34 +130,98 @@ with WidgetsBindingObserver {
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     cameraController.dispose();
-    // imageClassificationHelper.close();
+    imageClassificationHelper!.close();
     super.dispose();
   }
   
-  void capture(int newState) {
-    setState(() {
-      changeState = newState; // Actualiza el estado cuando el botón se presiona
-    });
-    if (_cameraImage != null) {
-      img.Image image = _convertYUV420toImage(_cameraImage);
-      List<int> jpegBytes = img.encodeJpg(image); // Codificar la imagen a formato JPEG
-      capturedImage = Uint8List?.fromList(jpegBytes); // Guardar la imagen en Uint8List
+  Future<void> capture(int newState) async {
+    try {
+    log("Botón presionado para tomar foto");
 
-    
-    
-    print("Imagen capturada y convertida a JPEG");
+    // Detener el flujo de imágenes antes de capturar (opcional)
+    // if (cameraController.value.isStreamingImages) {
+    //   await cameraController.stopImageStream();
+    //   log("Flujo de imágenes detenido");
+    // }
+
+    // Tomar la foto
+    final XFile capturedFile = await cameraController.takePicture();
+    log("Foto tomada: ${capturedFile.path}");
+
+    // Decodificar la imagen y analizarla
+    final img.Image? capturedImage = await processXFileToImage(capturedFile);
+    if (capturedImage != null) {
+      log("Imagen capturada y decodificada correctamente");
+
+      // Realizar análisis de la imagen
+      final classification =
+          await imageClassificationHelper?.inferenceImage(capturedImage);
+      log("Clasificación de la imagen: $classification");
+      setState(() {
+        changeState = newState; // Actualiza el estado cuando el botón se presiona
+      });
+    } else {
+      log("Error al procesar la imagen capturada.");
     }
+  } catch (e) {
+    log("Error al tomar la foto: $e");
+  }
+
+    // try {
+    //   await _initializeControllerFuture;
+      
+    //   img.Image image = _convertYUV420toImage(_cameraImage!);
+    //   List<int> jpegBytes = img.encodeJpg(image); // Codificar la imagen a formato JPEG
+      
+    //   capturedImage = Uint8List?.fromList(jpegBytes); // Guardar la imagen en Uint8List
+    //   imageToPredict = img.decodeImage(capturedImage!);
+    //   setState(() {});
+    //   classification = imageClassificationHelper?.inferenceImage(imageToPredict!) as List<double>?;
+    //   print("${classification}CLASIFICACIOOOOON++++++++++++++++++++++++");
+    //   setState(() {});
+    // } catch (e) {
+    //   print(e);
+    // }
+    
+    // // log(_cameraImage );
+    
+    // if (_cameraImage == null) {
+    //   log("No hay imagen disponible en este momento");
+    //   return;
+    // }
+    // if (_cameraImage != null) {
+      
+    //   img.Image image = _convertYUV420toImage(_cameraImage!);
+    //   List<int> jpegBytes = img.encodeJpg(image); // Codificar la imagen a formato JPEG
+      
+    //   capturedImage = Uint8List?.fromList(jpegBytes); // Guardar la imagen en Uint8List
+    //   imageToPredict = img.decodeImage(capturedImage!);
+    //   setState(() {});
+    //   classification = imageClassificationHelper?.inferenceImage(imageToPredict!) as List<double>?;
+    //   print("${classification}CLASIFICACIOOOOON++++++++++++++++++++++++");
+    //   setState(() {});
+    
+    
+    // print("Imagen capturada y convertida a JPEG");
+    // }
   }
    Widget cameraWidget(context) {
     var camera = cameraController.value;
     // fetch screen size
     final size = MediaQuery.of(context).size;
-
+    cameraController.initialize();
+    if (!cameraController.value.isInitialized) {
+      return Center(child: Text("Cámara no inicializada"));
+    }
+    if (camera.aspectRatio == null) {
+      return Center(child: Text("Error: Aspecto de la cámara no disponible"));
+    }
     // calculate scale depending on screen and camera ratios
     // this is actually size.aspectRatio / (1 / camera.aspectRatio)
     // because camera preview size is received as landscape
     // but we're calculating for portrait orientation
     var scale = size.aspectRatio * camera.aspectRatio;
+    
 
     // to prevent scaling down, invert the value
     if (scale < 1) scale = 1 / scale;
@@ -264,3 +364,23 @@ class verdadero extends StatelessWidget {
   }
 }
 
+Future<img.Image?> processXFileToImage(XFile xFile) async {
+  try {
+    // Leer los bytes de la imagen desde el archivo
+    Uint8List imageBytes = await xFile.readAsBytes();
+
+    // Decodificar la imagen en un objeto manipulable usando el paquete `image`
+    img.Image? decodedImage = img.decodeImage(imageBytes);
+
+    if (decodedImage != null) {
+      print("Imagen decodificada correctamente");
+      return decodedImage;
+    } else {
+      print("Error al decodificar la imagen");
+      return null;
+    }
+  } catch (e) {
+    print("Error al procesar la imagen: $e");
+    return null;
+  }
+}
