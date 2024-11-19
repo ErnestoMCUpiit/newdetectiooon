@@ -136,74 +136,36 @@ with WidgetsBindingObserver {
   
   Future<void> capture(int newState) async {
     try {
-    log("Botón presionado para tomar foto");
+      log("Botón presionado para tomar foto");
 
-    // Detener el flujo de imágenes antes de capturar (opcional)
-    // if (cameraController.value.isStreamingImages) {
-    //   await cameraController.stopImageStream();
-    //   log("Flujo de imágenes detenido");
-    // }
+      final XFile capturedFile = await cameraController.takePicture();
+      log("Foto tomada: ${capturedFile.path}");
 
-    // Tomar la foto
-    final XFile capturedFile = await cameraController.takePicture();
-    log("Foto tomada: ${capturedFile.path}");
+      //decodificar la imagen 
+      final img.Image? capturedImage = await processXFileToImage(capturedFile);
+      if (capturedImage != null) {
+        log("Imagen capturada y decodificada correctamente");
 
-    // Decodificar la imagen y analizarla
-    final img.Image? capturedImage = await processXFileToImage(capturedFile);
-    if (capturedImage != null) {
-      log("Imagen capturada y decodificada correctamente");
-
-      // Realizar análisis de la imagen
-      final classification =
-          await imageClassificationHelper?.inferenceImage(capturedImage);
-      log("Clasificación de la imagen: $classification");
-      setState(() {
-        changeState = newState; // Actualiza el estado cuando el botón se presiona
-      });
-    } else {
-      log("Error al procesar la imagen capturada.");
+        final classification =
+            await imageClassificationHelper?.inferenceImage(capturedImage);
+        log("Clasificación de la imagen: ${classification![0]}");
+        if(classification[0]>=0.6){
+          setState(() {
+            changeState = 2; // Actualiza el estado cuando el botón se presiona
+          });
+        }
+        else{ 
+          setState(() {
+            changeState = 0; // Actualiza el estado cuando el botón se presiona
+          });
+        }
+        
+      } else {
+        log("Error al procesar la imagen capturada.");
+      }
+    } catch (e) {
+      log("Error al tomar la foto: $e");
     }
-  } catch (e) {
-    log("Error al tomar la foto: $e");
-  }
-
-    // try {
-    //   await _initializeControllerFuture;
-      
-    //   img.Image image = _convertYUV420toImage(_cameraImage!);
-    //   List<int> jpegBytes = img.encodeJpg(image); // Codificar la imagen a formato JPEG
-      
-    //   capturedImage = Uint8List?.fromList(jpegBytes); // Guardar la imagen en Uint8List
-    //   imageToPredict = img.decodeImage(capturedImage!);
-    //   setState(() {});
-    //   classification = imageClassificationHelper?.inferenceImage(imageToPredict!) as List<double>?;
-    //   print("${classification}CLASIFICACIOOOOON++++++++++++++++++++++++");
-    //   setState(() {});
-    // } catch (e) {
-    //   print(e);
-    // }
-    
-    // // log(_cameraImage );
-    
-    // if (_cameraImage == null) {
-    //   log("No hay imagen disponible en este momento");
-    //   return;
-    // }
-    // if (_cameraImage != null) {
-      
-    //   img.Image image = _convertYUV420toImage(_cameraImage!);
-    //   List<int> jpegBytes = img.encodeJpg(image); // Codificar la imagen a formato JPEG
-      
-    //   capturedImage = Uint8List?.fromList(jpegBytes); // Guardar la imagen en Uint8List
-    //   imageToPredict = img.decodeImage(capturedImage!);
-    //   setState(() {});
-    //   classification = imageClassificationHelper?.inferenceImage(imageToPredict!) as List<double>?;
-    //   print("${classification}CLASIFICACIOOOOON++++++++++++++++++++++++");
-    //   setState(() {});
-    
-    
-    // print("Imagen capturada y convertida a JPEG");
-    // }
   }
    Widget cameraWidget(context) {
     var camera = cameraController.value;
@@ -278,63 +240,6 @@ with WidgetsBindingObserver {
     );
   }
 
-static img.Image _convertYUV420toImage(CameraImage cameraImage) {
-    final imageWidth = cameraImage.width;
-    final imageHeight = cameraImage.height;
-
-    final yBuffer = cameraImage.planes[0].bytes;
-    final uBuffer = cameraImage.planes[1].bytes;
-    final vBuffer = cameraImage.planes[2].bytes;
-
-    final int yRowStride = cameraImage.planes[0].bytesPerRow;
-    final int yPixelStride = cameraImage.planes[0].bytesPerPixel!;
-
-    final int uvRowStride = cameraImage.planes[1].bytesPerRow;
-    final int uvPixelStride = cameraImage.planes[1].bytesPerPixel!;
-
-    final image = img.Image(width: imageWidth, height: imageHeight);
-
-    for (int h = 0; h < imageHeight; h++) {
-      int uvh = (h / 2).floor();
-
-      for (int w = 0; w < imageWidth; w++) {
-        int uvw = (w / 2).floor();
-
-        final yIndex = (h * yRowStride) + (w * yPixelStride);
-
-        // Y plane should have positive values belonging to [0...255]
-        final int y = yBuffer[yIndex];
-
-        // U/V Values are subsampled i.e. each pixel in U/V chanel in a
-        // YUV_420 image act as chroma value for 4 neighbouring pixels
-        final int uvIndex = (uvh * uvRowStride) + (uvw * uvPixelStride);
-
-        // U/V values ideally fall under [-0.5, 0.5] range. To fit them into
-        // [0, 255] range they are scaled up and centered to 128.
-        // Operation below brings U/V values to [-128, 127].
-        final int u = uBuffer[uvIndex];
-        final int v = vBuffer[uvIndex];
-
-        // Compute RGB values per formula above.
-        int r = (y + v * 1436 / 1024 - 179).round();
-        int g = (y - u * 46549 / 131072 + 44 - v * 93604 / 131072 + 91).round();
-        int b = (y + u * 1814 / 1024 - 227).round();
-
-        r = r.clamp(0, 255);
-        g = g.clamp(0, 255);
-        b = b.clamp(0, 255);
-
-        image.setPixelRgb(w, h, r, g, b);
-      }
-    }
-
-    return image;
-  }
-  
-  int _clamp(int val) {
-    return val < 0 ? 0 : (val > 255 ? 255 : val);
-  }
-  
 }
 
 class loading extends StatelessWidget {
