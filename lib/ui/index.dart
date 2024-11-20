@@ -47,7 +47,7 @@ class _IndexState extends State<Index> {
           curve: curve,
           child: const Image(
             fit: BoxFit.cover,
-            image: AssetImage("assets/index.png"),),),
+            image: AssetImage("assets/2.png"),),),
         if (showText)
           Positioned(
             bottom: 420,

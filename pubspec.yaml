@@ -61,6 +61,7 @@ dev_dependencies:
 flutter:
   assets:
     - assets/bg.png
+    - assets/2.png
     - assets/bgindex.png
     - assets/icopn.png
     - assets/index.png
