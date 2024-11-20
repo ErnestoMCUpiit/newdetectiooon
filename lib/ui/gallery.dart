@@ -65,7 +65,7 @@ with WidgetsBindingObserver {
           _cameraImage = image;
         });
         // imageAnalysis(cameraImage);
-        await imageAnalysis(_cameraImage!);
+        
 
         _isProcessing = false;
       });
@@ -110,6 +110,7 @@ with WidgetsBindingObserver {
     imageClassificationHelper!.initHelper();
     super.initState();
   }
+  
 
   @override
   Future<void> didChangeAppLifecycleState(AppLifecycleState state) async {

@@ -48,6 +48,7 @@ class IsolateInference {
       image_lib.Image? img;
       if (isolateModel.isCameraFrame()) {
         img = ImageUtils.convertCameraImage(isolateModel.cameraImage!);
+        // print("sdsds");
       } else {
         img = isolateModel.image;
       }

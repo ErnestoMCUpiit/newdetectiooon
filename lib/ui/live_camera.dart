@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:newdetectiooon/helper/image_classification_helper.dart';
 
 class LiveCamera extends StatefulWidget {
   final CameraDescription camera;
@@ -17,10 +18,11 @@ class LiveCamera extends StatefulWidget {
 
 class _LiveCameraState extends State<LiveCamera>
 with WidgetsBindingObserver {
+  ImageClassificationHelper? imageClassificationHelper;
   late CameraController cameraController;
   bool _isProcessing = false;
   // late ImageClassificationHelper imageClassificationHelper;
-  Map<String, double>? classification;
+  List<double>? classification;
   
 
   initCamera() {
@@ -31,7 +33,7 @@ with WidgetsBindingObserver {
     cameraController.initialize().then((value) {
       cameraController.startImageStream(imageAnalysis);
       // cameraController.startImageStream((image) => _cameraImage = image);
-      
+      // cameraController.stopImageStream();
       if (mounted) {
         setState(() {});
       }
@@ -44,9 +46,13 @@ with WidgetsBindingObserver {
       return;
     }
     _isProcessing = true;
-    // classification =
-    //     await imageClassificationHelper.inferenceCameraFrame(cameraImage);
-    print('Cámara inicializada y tomando imágenes correctamente.');
+    if(cameraImage==null){
+      print("frame no detectado");
+      return;
+    }
+    classification =
+        await imageClassificationHelper?.inferenceCameraFrame(cameraImage);
+    print('prediccion =${classification?[0]}');
     _isProcessing = false;
     if (mounted) {
       setState(() {});
@@ -58,8 +64,8 @@ with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
     initCamera();
     print('Cámara inicializada y tomando imágenes correctamente.');
-    // imageClassificationHelper = ImageClassificationHelper();
-    // imageClassificationHelper.initHelper();
+    imageClassificationHelper = ImageClassificationHelper();
+    imageClassificationHelper!.initHelper();
     super.initState();
   }
 
@@ -128,8 +134,8 @@ with WidgetsBindingObserver {
           height: 200,
           width: MediaQuery.of(context).size.width,
 
-          child: Padding(padding: EdgeInsets.fromLTRB(20, 70, 0, 20), 
-            child: const Text("Predicciones:",
+          child: const Padding(padding: EdgeInsets.fromLTRB(20, 70, 0, 20), 
+            child: Text("Predicciones:",
               style: TextStyle(
                   fontFamily: "quicksand",
                   color: Color.fromARGB(255, 90, 143, 211),
