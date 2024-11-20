@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
+import 'dart:developer';
 import 'dart:io';
 import 'dart:isolate';
+import 'dart:typed_data';
 import 'package:camera/camera.dart';
 import 'package:image/image.dart' as image_lib;
 import 'package:newdetectiooon/helper/image_utils.dart';
@@ -76,6 +78,7 @@ class IsolateInference {
       );
 
       // Set tensor input [1, 224, 224, 3]
+      
       final input = [imageMatrix];
       // Set tensor output [1, 10]
       final output = [List<double>.filled(isolateModel.outputShape[1], 0)];
@@ -85,10 +88,43 @@ class IsolateInference {
       try {
       // Ejecutar la inferencia
         interpreter.run(input, output);
+        
+         // Asumiendo que inputImage es la imagen procesadax
+        
+        print("d}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}");
+        
       } catch (e, stackTrace) {
         // Verificar si el error es relevante o si podemos ignorarlo
         if (e.toString().contains("Null check operator used on a null value")) {
           print("Aviso: Error de operador de null ignorado. Continuando la ejecución.");
+          
+          var outputDetails = interpreter.getOutputTensor(1);
+          print(outputDetails.toString());
+          final rawData = outputDetails.data as Uint8List;
+          final float32Data = Float32List.sublistView(rawData);
+          // final boxesData = outputDetails.data as List<List<List<double>>>;
+          // Reorganizar en la forma [1, 10, 4]
+          final reshapedData = List.generate(
+            10, // Número de cajas
+            (i) => float32Data.sublist(i * 4, (i + 1) * 4),
+          );
+
+          // Procesar cada caja detectada
+          for (final box in reshapedData) {
+             // Coordenadas de una caja
+            final ymin = box[0];
+            final xmin = box[1];
+            final ymax = box[2];
+            final xmax = box[3];
+
+            // Convertir a coordenadas absolutas
+            final left = (xmin *  480).toInt();
+            final top = (ymin * 720).toInt();
+            final right = (xmax * 480).toInt();
+            final bottom = (ymax * 720).toInt();
+
+            // print('Caja detectada: (${left}, ${top}, ${right}, ${bottom})');
+          }
         } else {
           // Re-lanzar cualquier otro error inesperado
           print("Error inesperado: $e");

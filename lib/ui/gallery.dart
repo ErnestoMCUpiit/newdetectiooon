@@ -59,7 +59,7 @@ with WidgetsBindingObserver {
       // cameraController.startImageStream(imageAnalysis);
       // cameraController.startImageStream((image) => _cameraImage = image);
       cameraController.startImageStream((CameraImage image) async {
-        cameraController.stopImageStream();
+        // cameraController.stopImageStream();
         setState(() {
           log("cameraImage actualizado");
           _cameraImage = image;
@@ -133,6 +133,7 @@ with WidgetsBindingObserver {
     cameraController.dispose();
     imageClassificationHelper!.close();
     super.dispose();
+    log("instancias cerradas");
   }
   
   Future<void> capture(int newState) async {
@@ -144,6 +145,8 @@ with WidgetsBindingObserver {
 
       //decodificar la imagen 
       final img.Image? capturedImage = await processXFileToImage(capturedFile);
+      print("w w = ${capturedImage!.width}");
+      print("w h = ${capturedImage!.height}");
       if (capturedImage != null) {
         log("Imagen capturada y decodificada correctamente");
 

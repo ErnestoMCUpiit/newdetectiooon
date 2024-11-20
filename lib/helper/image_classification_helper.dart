@@ -81,7 +81,7 @@ class ImageClassificationHelper {
   Future<List<double>> _inference(InferenceModel inferenceModel) async {
     ReceivePort responsePort = ReceivePort();
     isolateInference.sendPort
-        .send(inferenceModel..responsePort = responsePort.sendPort);
+        ?.send(inferenceModel..responsePort = responsePort.sendPort);
     // get inference result.
     var results = await responsePort.first;
     return results;

@@ -74,7 +74,7 @@ class ExampleState  extends State<Example>{
       // get list available camera
       cameraDescription = (await availableCameras()).first;
       
-    }
+    } 
     setState(() {});
   } 
   

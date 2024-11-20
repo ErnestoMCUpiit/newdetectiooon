@@ -1,8 +1,10 @@
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:newdetectiooon/helper/image_classification_helper.dart';
+import 'package:newdetectiooon/ui/data.dart';
 
 class LiveCamera extends StatefulWidget {
   final CameraDescription camera;
@@ -23,6 +25,7 @@ with WidgetsBindingObserver {
   bool _isProcessing = false;
   // late ImageClassificationHelper imageClassificationHelper;
   List<double>? classification;
+  String alerta = "Detectando...";
   
 
   initCamera() {
@@ -34,9 +37,11 @@ with WidgetsBindingObserver {
       cameraController.startImageStream(imageAnalysis);
       // cameraController.startImageStream((image) => _cameraImage = image);
       // cameraController.stopImageStream();
+      _isProcessing = false;
       if (mounted) {
         setState(() {});
       }
+      
     });
   }
 
@@ -54,6 +59,19 @@ with WidgetsBindingObserver {
         await imageClassificationHelper?.inferenceCameraFrame(cameraImage);
     print('prediccion =${classification?[0]}');
     _isProcessing = false;
+    if(classification![0] >= 0.6){
+      if (mounted){
+        setState(() {
+        alerta = "ARMA DETECTADA";
+      });}
+    }
+    else{
+      if (mounted){setState(() {
+        alerta = "Detectando...";
+      });
+      }
+      
+    }
     if (mounted) {
       setState(() {});
     }
@@ -65,7 +83,13 @@ with WidgetsBindingObserver {
     initCamera();
     print('Cámara inicializada y tomando imágenes correctamente.');
     imageClassificationHelper = ImageClassificationHelper();
-    imageClassificationHelper!.initHelper();
+    // imageClassificationHelper!.initHelper();
+    imageClassificationHelper!.initHelper().then((_) {
+      initCamera(); // Inicializa la cámara solo después de configurar el helper.
+      print('Cámara inicializada y tomando imágenes correctamente.');
+    }).catchError((error) {
+      print("Error inicializando el helper: $error");
+    });
     super.initState();
   }
 
@@ -84,13 +108,15 @@ with WidgetsBindingObserver {
     }
   }
 
-  @override
-  void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    cameraController.dispose();
-    // imageClassificationHelper.close();
-    super.dispose();
-  }
+ @override
+void dispose() {
+  WidgetsBinding.instance.removeObserver(this);
+  cameraController.dispose();
+  imageClassificationHelper?.close();
+  imageClassificationHelper = null; // Libera la referencia.
+  super.dispose();
+  log("instancias cerradas");
+}
   
   Widget cameraWidget(context) {
     var camera = cameraController.value;
@@ -134,9 +160,9 @@ with WidgetsBindingObserver {
           height: 200,
           width: MediaQuery.of(context).size.width,
 
-          child: const Padding(padding: EdgeInsets.fromLTRB(20, 70, 0, 20), 
-            child: Text("Predicciones:",
-              style: TextStyle(
+          child: Padding(padding: EdgeInsets.fromLTRB(20, 70, 0, 20), 
+            child: Text("${alerta}",
+              style: const TextStyle(
                   fontFamily: "quicksand",
                   color: Color.fromARGB(255, 90, 143, 211),
                   decoration: TextDecoration.none,
