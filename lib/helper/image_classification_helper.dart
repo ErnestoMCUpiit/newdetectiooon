@@ -31,9 +31,10 @@ class ImageClassificationHelper {
 
   late final Interpreter interpreter;
   late final List<String> labels;
-  late final IsolateInference isolateInference;
+  IsolateInference? isolateInference;
   late Tensor inputTensor;
   late Tensor outputTensor;
+  bool _isInitialized = false;
 
   // Load model
   Future<void> _loadModel() async {
@@ -72,16 +73,31 @@ class ImageClassificationHelper {
   }
 
   Future<void> initHelper() async {
-    _loadLabels();
-    _loadModel();
-    isolateInference = IsolateInference();
-    await isolateInference.start();
+    if (_isInitialized) return;
+    // _loadLabels();
+    // _loadModel();
+    // log('Starting isolate inference...');
+    // isolateInference = IsolateInference();
+    // await isolateInference!.start();
+    // log('ImageClassificationHelper initialized successfully');
+    // _isInitialized = true;
+    try {
+      await _loadLabels();
+      await _loadModel();
+      isolateInference = IsolateInference();
+      await isolateInference!.start();
+      _isInitialized = true;
+      log("Helper inicializado correctamente.");
+    } catch (e) {
+      log("Error al inicializar el helper: $e");
+      rethrow; // Propagar el error si ocurre
+    }
   }
 
   Future<List<double>> _inference(InferenceModel inferenceModel) async {
     ReceivePort responsePort = ReceivePort();
-    isolateInference.sendPort
-        ?.send(inferenceModel..responsePort = responsePort.sendPort);
+    isolateInference!.sendPort
+        .send(inferenceModel..responsePort = responsePort.sendPort);
     // get inference result.
     var results = await responsePort.first;
     return results;
@@ -90,6 +106,12 @@ class ImageClassificationHelper {
   // inference camera frame
   Future<List<double>> inferenceCameraFrame(
       CameraImage cameraImage) async {
+    // var isolateModel = InferenceModel(cameraImage, null, interpreter.address,
+    //     labels, inputTensor.shape, outputTensor.shape);
+    // return _inference(isolateModel);
+    if (!isAvailable) {
+      throw Exception("Helper no disponible: asegúrate de inicializarlo.");
+    }
     var isolateModel = InferenceModel(cameraImage, null, interpreter.address,
         labels, inputTensor.shape, outputTensor.shape);
     return _inference(isolateModel);
@@ -103,6 +125,13 @@ class ImageClassificationHelper {
   }
 
   Future<void> close() async {
-    isolateInference.close();
+    // isolateInference.close();
+    // log("imageClassificationHelper cerrado");
+    if (!_isInitialized) return; // Evitar cerrar si no está inicializado
+    isolateInference?.close();
+    isolateInference = null;
+    _isInitialized = false;
+    log('ImageClassificationHelper closed successfully');
   }
+  bool get isAvailable => _isInitialized && isolateInference != null;
 }

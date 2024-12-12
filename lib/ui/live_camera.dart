@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:newdetectiooon/helper/image_classification_helper.dart';
-import 'package:newdetectiooon/ui/data.dart';
 
 class LiveCamera extends StatefulWidget {
   final CameraDescription camera;
@@ -20,7 +19,8 @@ class LiveCamera extends StatefulWidget {
 
 class _LiveCameraState extends State<LiveCamera>
 with WidgetsBindingObserver {
-  ImageClassificationHelper? imageClassificationHelper;
+  bool isLoading = true;
+  late ImageClassificationHelper imageClassificationHelper;
   late CameraController cameraController;
   bool _isProcessing = false;
   // late ImageClassificationHelper imageClassificationHelper;
@@ -37,7 +37,7 @@ with WidgetsBindingObserver {
       cameraController.startImageStream(imageAnalysis);
       // cameraController.startImageStream((image) => _cameraImage = image);
       // cameraController.stopImageStream();
-      _isProcessing = false;
+      // _isProcessing = false;
       if (mounted) {
         setState(() {});
       }
@@ -47,16 +47,16 @@ with WidgetsBindingObserver {
 
    Future<void> imageAnalysis(CameraImage cameraImage) async {
     // if image is still analyze, skip this frame
+    if (!imageClassificationHelper!.isAvailable) {
+      log("Helper no está disponible.");
+      return;
+    }
     if (_isProcessing) {
       return;
     }
     _isProcessing = true;
-    if(cameraImage==null){
-      print("frame no detectado");
-      return;
-    }
     classification =
-        await imageClassificationHelper?.inferenceCameraFrame(cameraImage);
+        await imageClassificationHelper.inferenceCameraFrame(cameraImage);
     print('prediccion =${classification?[0]}');
     _isProcessing = false;
     if(classification![0] >= 0.6){
@@ -81,14 +81,12 @@ with WidgetsBindingObserver {
   void initState() {
     WidgetsBinding.instance.addObserver(this);
     initCamera();
-    print('Cámara inicializada y tomando imágenes correctamente.');
     imageClassificationHelper = ImageClassificationHelper();
     // imageClassificationHelper!.initHelper();
-    imageClassificationHelper!.initHelper().then((_) {
-      initCamera(); // Inicializa la cámara solo después de configurar el helper.
-      print('Cámara inicializada y tomando imágenes correctamente.');
+    imageClassificationHelper.initHelper().then((_) {
+      log('Cámara inicializada y tomando imágenes correctamente.');
     }).catchError((error) {
-      print("Error inicializando el helper: $error");
+      log("Error inicializando el helper: $error");
     });
     super.initState();
   }
@@ -112,8 +110,8 @@ with WidgetsBindingObserver {
 void dispose() {
   WidgetsBinding.instance.removeObserver(this);
   cameraController.dispose();
-  imageClassificationHelper?.close();
-  imageClassificationHelper = null; // Libera la referencia.
+  imageClassificationHelper.close();
+  // imageClassificationHelper = null; // Libera la referencia.
   super.dispose();
   log("instancias cerradas");
 }
