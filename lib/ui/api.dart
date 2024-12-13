@@ -29,7 +29,6 @@ class _ApiState extends State<Api> {
   Widget build(BuildContext context) {
     print("body");
     if (isLoading || finalWeapons.isEmpty) {
-      // Mostrar pantalla de carga mientras se obtienen los datos
       return sinCarga();
     }
     return Scaffold(

@@ -10,6 +10,7 @@ import 'package:flutter/widgets.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:newdetectiooon/helper/image_classification_helper.dart';
+import 'package:newdetectiooon/helper/registration.dart';
 import 'package:newdetectiooon/ui/capture_button.dart';
 
 class Gallery extends StatefulWidget {
@@ -138,11 +139,12 @@ with WidgetsBindingObserver {
   
   Future<void> capture(int newState) async {
     try {
+      Map<String, dynamic> registro ;
       log("Botón presionado para tomar foto");
 
       final XFile capturedFile = await cameraController.takePicture();
       log("Foto tomada: ${capturedFile.path}");
-
+      
       //decodificar la imagen 
       final img.Image? capturedImage = await processXFileToImage(capturedFile);
       print("w w = ${capturedImage!.width}");
@@ -153,9 +155,23 @@ with WidgetsBindingObserver {
         final classification =
             await imageClassificationHelper?.inferenceImage(capturedImage);
         log("Clasificación de la imagen: ${classification![0]}");
-        if(classification[0]>=0.6){
+        if(classification[0]>=0.65){
           setState(() {
+            
+            var now = DateTime.now().toUtc();
+            now = now.toLocal();
+
+            registro = {
+              "Anio": now.year,
+              "Mes": now.month,
+              "Dia": now.day,
+              "Hora":now.hour,
+              "minuto": now.minute,
+              "Lugar":"aqui"};
+            // log(now.toString());
+            registroItems.add(registro);
             changeState = 2; // Actualiza el estado cuando el botón se presiona
+            registro = {};
           });
         }
         else{ 

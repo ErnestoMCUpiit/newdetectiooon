@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 
 class Selection extends StatefulWidget {
@@ -26,9 +27,12 @@ class _SelectionState extends State<Selection> {
 
   @override
   Widget build(BuildContext context) {
+    
     return Scaffold(
+      
       body: Stack(
         children: [
+          
           // Fondo de pantalla
           Container(
             decoration: const BoxDecoration(
@@ -39,6 +43,17 @@ class _SelectionState extends State<Selection> {
             ),
           ),
           // Botón animado con Stack y AnimatedPositioned
+          Positioned(
+            top: 40,
+            right: 15,
+            child: IconButton(
+              onPressed:(){
+                context.go("/registros");
+              } , 
+              icon: const Icon(Icons.menu_book,
+                        color: Color.fromARGB(255, 183, 208, 238),
+                        size:45.0,)),
+          ),
           AnimatedPositioned(
             duration: duration,
             curve: curve,

@@ -10,6 +10,7 @@ import 'package:newdetectiooon/ui/gallery.dart';
 import 'package:newdetectiooon/ui/index.dart';
 import 'package:newdetectiooon/ui/live_camera.dart';
 import 'package:newdetectiooon/ui/load_screen.dart';
+import 'package:newdetectiooon/ui/registros.dart';
 import 'package:newdetectiooon/ui/selection.dart';
 
 void main() {
@@ -105,6 +106,11 @@ final _router = GoRouter(
             path: "live",
             builder: (context, state) => LiveCamera(camera: cameraDescription),
             ),
+            GoRoute(
+              path: 'registros',
+              builder: (context, state) {
+                return Registros();
+              },),
            GoRoute(
             path: "api",
             builder: (context, state) => Api(),
