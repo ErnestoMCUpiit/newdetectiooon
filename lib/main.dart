@@ -5,6 +5,7 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
+import 'package:newdetectiooon/helper/registration.dart';
 import 'package:newdetectiooon/ui/api.dart';
 import 'package:newdetectiooon/ui/gallery.dart';
 import 'package:newdetectiooon/ui/index.dart';
@@ -70,6 +71,7 @@ class ExampleState  extends State<Example>{
   }
   
   initPages()  async{
+    registroItems = await RegistroPersistente.loadRegistroItems();
     if (cameraIsAvailable) {
       // get list available camera
       cameraDescription = (await availableCameras()).first;

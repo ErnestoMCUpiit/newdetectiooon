@@ -1,7 +1,10 @@
 import 'dart:developer';
+import 'dart:ffi';
 import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui';
+import 'package:geolocator/geolocator.dart';
+import 'package:go_router/go_router.dart';
 import 'package:image/image.dart' as img;
 import 'package:camera/camera.dart';
 import 'package:flutter/cupertino.dart';
@@ -45,6 +48,38 @@ with WidgetsBindingObserver {
   ];
   int changeState = 0;
 
+
+  Future<Position> posicionDeterminada() async{
+    LocationPermission permisos;
+    permisos = await Geolocator.checkPermission();
+    if(permisos == LocationPermission.denied){
+      permisos = await Geolocator.requestPermission();
+      if (permisos == LocationPermission.denied){
+        context.go("/select");
+        return Future.error("error permisos");
+        
+      }
+    }
+    return await Geolocator.getCurrentPosition();
+  }
+
+  Future<String> getCurrentLocation ()async{
+    Position posicionChida = await posicionDeterminada();
+
+    double latitud = posicionChida.latitude;
+    double longitud = posicionChida.longitude;
+
+    // Construir el enlace de Google Maps
+    String googleMapsUrl = "https://www.google.com/maps/search/?api=1&query=$latitud,$longitud";
+
+    log("Coordenadas");
+    log(posicionChida.toString());
+    log("Google Maps Link: $googleMapsUrl");
+
+    return googleMapsUrl.toString();
+    // log("Coordenadas");
+    // log(posicionChida.toString());
+  }
   void initCamera() async {
     cameraController = CameraController(
       widget.camera, ResolutionPreset.medium,
@@ -130,6 +165,7 @@ with WidgetsBindingObserver {
 
   @override
   void dispose() {
+    RegistroPersistente.saveRegistroItems(registroItems);
     WidgetsBinding.instance.removeObserver(this);
     cameraController.dispose();
     imageClassificationHelper!.close();
@@ -156,18 +192,17 @@ with WidgetsBindingObserver {
             await imageClassificationHelper?.inferenceImage(capturedImage);
         log("Clasificación de la imagen: ${classification![0]}");
         if(classification[0]>=0.65){
+          String link = await getCurrentLocation();
           setState(() {
-            
             var now = DateTime.now().toUtc();
             now = now.toLocal();
-
             registro = {
               "Anio": now.year,
               "Mes": now.month,
               "Dia": now.day,
               "Hora":now.hour,
               "minuto": now.minute,
-              "Lugar":"aqui"};
+              "Lugar":link.toString()};
             // log(now.toString());
             registroItems.add(registro);
             changeState = 2; // Actualiza el estado cuando el botón se presiona

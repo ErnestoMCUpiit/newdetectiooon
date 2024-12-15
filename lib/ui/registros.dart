@@ -28,6 +28,28 @@ class _RegistrosState extends State<Registros> {
         color: Color.fromARGB(255,4, 89, 203),
         child: Column(
           children: [
+            Container(
+            color: const Color.fromARGB(255, 211, 225, 243),
+            child: Padding(
+              padding: EdgeInsets.all(7.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                Padding(
+                  padding: EdgeInsets.only(left: 55),
+                  child: Text("FECHA",
+                  style:styleTexto())
+                ),
+                Padding(
+                  padding: EdgeInsets.only(left: 55),
+                  child: Text("HORA",
+                  style: styleTexto(),),
+                ),
+                Text("LUGAR",
+                style:styleTexto())
+              ],),
+            ),
+          ),
             Expanded(
               child: ListView.builder(
                 itemCount: registroItems.length,
@@ -39,5 +61,15 @@ class _RegistrosState extends State<Registros> {
         )
       ),
     );
+  }
+
+  TextStyle styleTexto() {
+    return const TextStyle(
+                  fontSize: 20,
+                  color: Colors.black,
+                  fontFamily: "quicksand",
+                  fontWeight: FontWeight.w800,
+                  decoration: TextDecoration.none,
+                );
   }
 }

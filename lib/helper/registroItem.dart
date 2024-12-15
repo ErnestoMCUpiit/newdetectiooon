@@ -1,5 +1,8 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:newdetectiooon/helper/registration.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class RegistroItem extends StatefulWidget {
   final Map<String, dynamic> registro;
@@ -24,28 +27,7 @@ class _RegistroItemState extends State<RegistroItem> {
       color: const Color.fromARGB(255, 122, 177, 248),
       child: Column(
         children: [
-          Container(
-            color: const Color.fromARGB(255, 211, 225, 243),
-            child: Padding(
-              padding: EdgeInsets.all(7.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                Padding(
-                  padding: EdgeInsets.only(left: 55),
-                  child: Text("FECHA",
-                  style:styleTexto())
-                ),
-                Padding(
-                  padding: EdgeInsets.only(left: 55),
-                  child: Text("HORA",
-                  style: styleTexto(),),
-                ),
-                Text("LUGAR",
-                style:styleTexto())
-              ],),
-            ),
-          ),
+          
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
@@ -57,8 +39,17 @@ class _RegistroItemState extends State<RegistroItem> {
               Text("${registroLista["Hora"].toString()}:${registroLista["Minuto"].toString()}",
               style: registroDatosTextstilo()),
               // Text("LUGAR"),
-              Text(registroLista["Lugar"].toString(),
-              style: registroDatosTextstilo()),
+              // Text(registroLista["Lugar"].toString(),
+              // style: registroDatosTextstilo()),
+              IconButton(
+              onPressed:(){
+                // context.go("/registros");
+                log("link = ${registroLista["Lugar"]}");
+                launchUrl(Uri.parse(registroLista["Lugar"]));
+              } , 
+              icon: const Icon(Icons.location_pin,
+                        color: Color.fromARGB(255, 13, 59, 116),
+                        size:40.0,)),
               // Text(registroLista["Hora"].toString()),
               // Text(registroLista["Lugar"].toString()),
             ],
@@ -75,15 +66,5 @@ class _RegistroItemState extends State<RegistroItem> {
       fontFamily: "quicksand",
       // fontWeight: FontWeight,
       decoration: TextDecoration.none,);
-
-  TextStyle styleTexto() {
-    return const TextStyle(
-                  fontSize: 20,
-                  color: Colors.black,
-                  fontFamily: "quicksand",
-                  fontWeight: FontWeight.w800,
-                  decoration: TextDecoration.none,
-                );
-  }
 }
 
